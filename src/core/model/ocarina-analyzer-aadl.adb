@@ -44,6 +44,7 @@ with Ocarina.ME_AADL.AADL_Tree.Entities;
 with Ocarina.ME_AADL.Printers;
 
 with Ocarina.Options;
+with Ocarina.Output; use Ocarina.Output;
 
 package body Ocarina.Analyzer.AADL is
 
@@ -90,6 +91,8 @@ package body Ocarina.Analyzer.AADL is
    begin
       Ocarina.Analyzer.AADL.Naming_Rules.Initialize;
 
+      Write_Line ("Analyze_Model: start");
+
       --  Check legality rules (properties, types...)
 
       Success := Check_Legality_Rules (Root);
@@ -123,10 +126,14 @@ package body Ocarina.Analyzer.AADL is
       --  AADL property types and constants and check the semantics of
       --  the properties.
 
+      Write_Line ("Analyze_Model: check 1");
+
       Success :=
         Success
         and then Link_Properties_Of_AADL_Description (Root)
         and then Check_Semantics_Of_Properties (Root);
+
+      Write_Line ("Analyze_Model: check 2");
 
       Success := Success
         and then Find_Analyze_Annexes (Root);
@@ -139,6 +146,8 @@ package body Ocarina.Analyzer.AADL is
            (Root,
             Ocarina.ME_AADL.AADL_Tree.Debug.W_Node_Id'Access);
       end if;
+
+      Write_Line ("Analyze_Model: returning");
 
       return Success;
    end Analyze_Model;

@@ -42,6 +42,7 @@ with Ocarina.ME_AADL.AADL_Tree.Nodes;
 with Ocarina.ME_AADL.AADL_Tree.Nutils;
 with Ocarina.ME_AADL.AADL_Tree.Entities;
 with Ocarina.ME_AADL.AADL_Tree.Entities.Properties;
+with Ocarina.Output; use Ocarina.Output;
 
 package body Ocarina.Analyzer.AADL.Links is
 
@@ -1878,6 +1879,7 @@ package body Ocarina.Analyzer.AADL.Links is
       Tmp_Node                : Node_Id;
       Property_Type           : Node_Id := No_Node;
    begin
+      Write_Line ("Link_Property_Association: check 1");
       if AADL_Version = AADL_V2
         and then Present (Namespace_Identifier (Property_Name (Node)))
         and then Present (Value_Container (Property_Association_Value (Node)))
@@ -1887,6 +1889,8 @@ package body Ocarina.Analyzer.AADL.Links is
              (Value_Container (Property_Association_Value (Node)),
               Namespace_Identifier (Property_Name (Node)));
       end if;
+
+      Write_Line ("Link_Property_Association: check 2");
 
       if Success then
          Pointed_Node :=
@@ -1928,9 +1932,10 @@ package body Ocarina.Analyzer.AADL.Links is
                     Property_Type)
                  and then Success;
             else
+               Write_Line ("Link_Property_Association: check 3.1");
                List_Node :=
                  First_Node (Multi_Value (Property_Association_Value (Node)));
-
+               Write_Line ("Link_Property_Association: check 3.2");
                while Present (List_Node) loop
                   Success :=
                     Link_Property_Value
@@ -2117,24 +2122,30 @@ package body Ocarina.Analyzer.AADL.Links is
       List_Node : Node_Id;
       Success   : Boolean := True;
    begin
+      Write_Line ("Link_Properties_Of_AADL_Description: start");
       Push_Scope (Entity_Scope (Root));
 
       if not Is_Empty (Declarations (Root)) then
-         List_Node := First_Node (Declarations (Root));
 
+         Write_Line ("Link_Properties_Of_AADL_Description: check 1");
+         List_Node := First_Node (Declarations (Root));
+         Write_Line ("Link_Properties_Of_AADL_Description: check 2");
          while Present (List_Node) loop
             if Kind (List_Node) = K_Package_Specification then
+               Write_Line ("Link_Properties_Of_AADL_Description: check 3.1");
                Success :=
                  Link_Properties_Of_Package (Root => Root, Node => List_Node)
                  and then Success;
-
+               Write_Line ("Link_Properties_Of_AADL_Description: check 3.2");
             elsif Kind (List_Node) = K_Component_Type
               or else Kind (List_Node) = K_Component_Implementation
               or else Kind (List_Node) = K_Feature_Group_Type
             then
+               Write_Line ("Link_Properties_Of_AADL_Description: check 4.1");
                Success :=
                  Link_Properties_Of_Component (Root => Root, Node => List_Node)
                  and then Success;
+               Write_Line ("Link_Properties_Of_AADL_Description: check 4.2");
             end if;
 
             List_Node := Next_Node (List_Node);
@@ -2142,6 +2153,7 @@ package body Ocarina.Analyzer.AADL.Links is
       end if;
 
       Pop_Scope;
+      Write_Line ("Link_Properties_Of_AADL_Description: returning");
       return Success;
    end Link_Properties_Of_AADL_Description;
 
@@ -2164,11 +2176,15 @@ package body Ocarina.Analyzer.AADL.Links is
    begin
       case Kind (Node) is
          when K_Component_Type =>
+            Write_Line ("Link_Properties_Of_Component: check 1.1");
             Success := Link_Properties_Of_Component_Type (Root, Node);
+            Write_Line ("Link_Properties_Of_Component: check 1.2");
 
          when K_Component_Implementation =>
+            Write_Line ("Link_Properties_Of_Component: check 2.1");
             Success :=
               Link_Properties_Of_Component_Implementation (Root, Node);
+            Write_Line ("Link_Properties_Of_Component: check 2.2");
 
          when K_Feature_Group_Type =>
             Success := Link_Properties_Of_Feature_Group_Type (Root, Node);
@@ -2305,10 +2321,12 @@ package body Ocarina.Analyzer.AADL.Links is
            First_Node (Ocarina.ME_AADL.AADL_Tree.Nodes.Properties (Node));
 
          while Present (List_Node) loop
+            Write_Line ("Link_Properties_Of_Component_Implementation: check 1.1");
             Success :=
               Link_Property_Association (Root, Node, List_Node)
               and then Success;
             List_Node := Next_Node (List_Node);
+            Write_Line ("Link_Properties_Of_Component_Implementation: check 1.2");
          end loop;
       end if;
 
@@ -2394,17 +2412,22 @@ package body Ocarina.Analyzer.AADL.Links is
    begin
       Push_Scope (Property_Scope (Node));
 
+      Write_Line ("Link_Properties_Of_Package: start");
       if not Is_Empty (Declarations (Node)) then
+         Write_Line ("Link_Properties_Of_Package: check 1.1");
          List_Node := First_Node (Declarations (Node));
+         Write_Line ("Link_Properties_Of_Package: check 1.2");
 
          while Present (List_Node) loop
             if Kind (List_Node) = K_Component_Type
               or else Kind (List_Node) = K_Component_Implementation
               or else Kind (List_Node) = K_Feature_Group_Type
             then
+               Write_Line ("Link_Properties_Of_Package: check 2.1");
                Success :=
                  Link_Properties_Of_Component (Root, List_Node)
                  and then Success;
+               Write_Line ("Link_Properties_Of_Package: check 2.2");
             end if;
 
             List_Node := Next_Node (List_Node);

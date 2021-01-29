@@ -62,16 +62,16 @@ package body Ocarina.Instances.Processor.Properties is
    --  Next_Node), or No_Node if nothing could be evaluated.
 
    procedure Expand_Property_Value
-     (Instance_Root :     Node_Id;
-      Container     :     Node_Id;
-      Property      :     Node_Id;
-      Result_Node   : out Node_Id;
-      Result_List   : out List_Id);
+     (Instance_Root    :     Node_Id;
+      Container        :     Node_Id;
+      Property         :     Node_Id;
+      Result_Node      : out Node_Id;
+      Result_List_Node : out Node_Id);
    --  Expand the property terms of the property, and return all the
    --  property values. If the property is a list property then the
-   --  result will be returned in Result_List and Result_Node will be
-   --  set to No_Node. Otherwise, the result will be returned in
-   --  Result_Node and Result_List will be set to No_List.
+   --  result will be returned in Result_List_Node and Result_Node will
+   --  be set to No_Node. Otherwise, the result will be returned in
+   --  Result_Node and Result_List_Node will be set to No_Node.
 
    procedure Resolve_Values
      (Root      : Node_Id;
@@ -133,18 +133,18 @@ package body Ocarina.Instances.Processor.Properties is
 
       Prop_Value : constant Node_Id :=
         AIN.Property_Association_Value (Property);
-      Expanded_Node : Node_Id;
-      Expanded_List : List_Id;
+      Expanded_Node      : Node_Id;
+      Expanded_List_Node : Node_Id;
    begin
       Expand_Property_Value
         (Root,
          Container,
          Property,
          Expanded_Node,
-         Expanded_List);
+         Expanded_List_Node);
 
       Set_Expanded_Single_Value (Prop_Value, Expanded_Node);
-      Set_Expanded_Multi_Value (Prop_Value, Expanded_List);
+      Set_Expanded_Multi_Value (Prop_Value, Expanded_List_Node);
    end Resolve_Values;
 
    ---------------------------
@@ -152,11 +152,11 @@ package body Ocarina.Instances.Processor.Properties is
    ---------------------------
 
    procedure Expand_Property_Value
-     (Instance_Root :     Node_Id;
-      Container     :     Node_Id;
-      Property      :     Node_Id;
-      Result_Node   : out Node_Id;
-      Result_List   : out List_Id)
+     (Instance_Root    :     Node_Id;
+      Container        :     Node_Id;
+      Property         :     Node_Id;
+      Result_Node      : out Node_Id;
+      Result_List_Node : out Node_Id)
    is
       pragma Assert (Kind (Instance_Root) = K_Architecture_Instance);
       pragma Assert (Present (Container));
@@ -172,7 +172,7 @@ package body Ocarina.Instances.Processor.Properties is
       Evaluation_Container : Node_Id;
    begin
       Result_Node := No_Node;
-      Result_List := No_List;
+      Result_List_Node := No_Node;
 
       if No (Property) then
          return;
@@ -206,9 +206,16 @@ package body Ocarina.Instances.Processor.Properties is
                  Property_Value => Single_Value (Value));
          end if;
 
-         if not ATNU.Is_Empty (Multi_Value (Value)) then
-            Result_List := ATNU.New_List (K_List_Id, ATN.Loc (Value));
-            List_Node   := ATN.First_Node (Multi_Value (Value));
+         -- if not ATNU.Is_Empty (Multi_Value (Value)) then
+         if Present (Multi_Value (Value)) then
+            Result_List_Node :=
+              ATNU.New_Node (K_Property_List_Value, ATN.Loc (Value));
+            Set_Property_Values
+              (Result_List_Node,
+               ATNU.New_List (K_List_Id, ATN.Loc (Value)));
+            -- Result_List := ATNU.New_List (K_List_Id, ATN.Loc (Value));
+            List_Node :=
+              ATN.First_Node (Property_Values (Multi_Value (Value)));
 
             while Present (List_Node) loop
                Computed_Value :=
@@ -222,7 +229,9 @@ package body Ocarina.Instances.Processor.Properties is
                   --  pointed to. Then we simply ignore it. Else we
                   --  append the computed values.
 
-                  ATNU.Append_Node_To_List (Computed_Value, Result_List);
+                  ATNU.Append_Node_To_List
+                    (Computed_Value,
+                     Property_Values (Result_List_Node));
                end if;
 
                List_Node := ATN.Next_Node (List_Node);
@@ -263,7 +272,7 @@ package body Ocarina.Instances.Processor.Properties is
 
       Evaluated_Value : Node_Id;
       Node            : Node_Id;
-      Dummy           : List_Id;
+      Dummy           : Node_Id;
       pragma Warnings (Off, Dummy); --  Not read in realease mode
    begin
       if No (Property_Value) then
@@ -398,13 +407,14 @@ package body Ocarina.Instances.Processor.Properties is
 
             when K_Property_Term =>
                Expand_Property_Value
-                 (Instance_Root => Instance_Root,
-                  Container     => Container,
-                  Property      => ATE.Get_Referenced_Entity (Property_Value),
-                  Result_Node   => Evaluated_Value,
-                  Result_List   => Dummy);
+                 (Instance_Root    => Instance_Root,
+                  Container        => Container,
+                  Property         =>
+                    ATE.Get_Referenced_Entity (Property_Value),
+                  Result_Node      => Evaluated_Value,
+                  Result_List_Node => Dummy);
 
-               pragma Assert (Dummy = No_List);
+               pragma Assert (Dummy = No_Node);
 
             when K_Minus_Numeric_Term =>
                declare
@@ -417,7 +427,7 @@ package body Ocarina.Instances.Processor.Properties is
                        Container      => Container,
                        Property_Value => Numeric_Term (Property_Value));
 
-                  pragma Assert (Dummy = No_List);
+                  pragma Assert (Dummy = No_Node);
 
                   if Present (Evaluated_Value) then
                      if Kind (Evaluated_Value) = K_Literal then

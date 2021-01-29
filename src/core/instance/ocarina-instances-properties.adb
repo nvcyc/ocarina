@@ -514,8 +514,9 @@ package body Ocarina.Instances.Properties is
       --  If we are extending a former property value, this one must
       --  be a list.
 
-      Duplicated_Property_Value : Node_Id;
-      List_Node                 : Node_Id;
+      Duplicated_Property_Value      : Node_Id;
+      Duplicated_Property_List_Value : Node_Id;
+      List_Node                      : Node_Id;
    begin
       if No (Former_Property_Instance_Value) then
          if No (Property_Value) then
@@ -539,14 +540,30 @@ package body Ocarina.Instances.Properties is
                   Single_Value (Duplicated_Property_Value));
             end if;
 
-            if Multi_Value (Property_Value) /= No_List then
+            if Multi_Value (Property_Value) /= No_Node then
                --  We set the value calculated at analysis time
 
-               Set_Multi_Value
-                 (Duplicated_Property_Value,
+               Duplicated_Property_List_Value :=
+                 New_Node
+                   (K_Property_List_Value,
+                    ATN.Loc (Multi_Value (Property_Value)));
+               Set_Property_Values
+                 (Duplicated_Property_List_Value,
                   New_List
                     (K_List_Id,
-                     ATN.Loc (Node_Id (Multi_Value (Property_Value)))));
+                     ATN.Loc
+                       (Node_Id
+                         (Property_Values (Multi_Value (Property_Value))))));
+               Set_Multi_Value
+                 (Duplicated_Property_Value,
+                  Duplicated_Property_List_Value);
+
+               -- Set_Multi_Value
+               --   (Duplicated_Property_Value,
+               --    New_List
+               --      (K_List_Id,
+               --       ATN.Loc (Node_Id (Multi_Value (Property_Value)))));
+
                Set_Expanded_Multi_Value
                  (Duplicated_Property_Value,
                   Multi_Value (Duplicated_Property_Value));
@@ -558,10 +575,13 @@ package body Ocarina.Instances.Properties is
                   --  seems OK. To be investigated further
 
                   List_Node :=
-                    ATN.First_Node (Expanded_Multi_Value (Property_Value));
+                    ATN.First_Node
+                      (Property_Values
+                        (Expanded_Multi_Value (Property_Value)));
                else
                   List_Node :=
-                    ATN.First_Node (Multi_Value (Property_Value));
+                    ATN.First_Node
+                      (Property_Values (Multi_Value (Property_Value)));
                end if;
 
                while Present (List_Node) loop
@@ -570,7 +590,8 @@ package body Ocarina.Instances.Properties is
                        (Instance_Root,
                         List_Node,
                         Instance),
-                     Multi_Value (Duplicated_Property_Value));
+                     Property_Values
+                       (Multi_Value (Duplicated_Property_Value)));
                   List_Node := ATN.Next_Node (List_Node);
                end loop;
 
@@ -584,22 +605,38 @@ package body Ocarina.Instances.Properties is
          Duplicated_Property_Value :=
            New_Node (K_Property_Value, ATN.Loc (Property_Value));
 
+         Duplicated_Property_List_Value :=
+           New_Node
+             (K_Property_List_Value,
+              ATN.Loc (Multi_Value (Property_Value)));
+         Set_Property_Values
+           (Duplicated_Property_List_Value,
+              New_List
+              (K_List_Id,
+               ATN.Loc
+                 (Node_Id (Property_Values (Multi_Value (Property_Value))))));
          Set_Multi_Value
            (Duplicated_Property_Value,
-            New_List
-              (K_List_Id,
-               ATN.Loc (Node_Id (Multi_Value (Property_Value)))));
+            Duplicated_Property_List_Value);
+
+         -- Set_Multi_Value
+         --   (Duplicated_Property_Value,
+         --    New_List
+         --      (K_List_Id,
+         --       ATN.Loc (Node_Id (Multi_Value (Property_Value)))));
+
          Set_Expanded_Multi_Value
            (Duplicated_Property_Value,
             Multi_Value (Duplicated_Property_Value));
 
          List_Node :=
-           ATN.First_Node (Multi_Value (Former_Property_Instance_Value));
+           ATN.First_Node
+             (Property_Values (Multi_Value (Former_Property_Instance_Value)));
 
          while Present (List_Node) loop
             Append_Node_To_List
               (Instantiate_Property_Value (Instance_Root, List_Node, Instance),
-               Multi_Value (Duplicated_Property_Value));
+               Property_Values (Multi_Value (Duplicated_Property_Value)));
             List_Node := ATN.Next_Node (List_Node);
          end loop;
 
@@ -611,10 +648,11 @@ package body Ocarina.Instances.Properties is
                  (Instance_Root,
                   Single_Value (Property_Value),
                   Instance),
-               Multi_Value (Duplicated_Property_Value));
+               Property_Values (Multi_Value (Duplicated_Property_Value)));
 
-         elsif Multi_Value (Property_Value) /= No_List then
-            List_Node := ATN.First_Node (Multi_Value (Property_Value));
+         elsif Multi_Value (Property_Value) /= No_Node then
+            List_Node :=
+              ATN.First_Node (Property_Values (Multi_Value (Property_Value)));
 
             while Present (List_Node) loop
                Append_Node_To_List
@@ -622,7 +660,7 @@ package body Ocarina.Instances.Properties is
                     (Instance_Root,
                      List_Node,
                      Instance),
-                  Multi_Value (Duplicated_Property_Value));
+                  Property_Values (Multi_Value (Duplicated_Property_Value)));
                List_Node := ATN.Next_Node (List_Node);
             end loop;
          end if;

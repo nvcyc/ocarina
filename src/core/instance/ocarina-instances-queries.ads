@@ -221,14 +221,14 @@ package Ocarina.Instances.Queries is
    function Get_List_Property
      (Entity  : Node_Id;
       Name    : Name_Id;
-      In_Mode : Name_Id := No_Name) return List_Id;
+      In_Mode : Name_Id := No_Name) return Node_Id;
    --  Cf. the documentation of
    --  Ocarina.Analyzer.Queries.Get_List_Property
 
    function Get_List_Property
      (Entity  : Node_Id;
       Name    : String;
-      In_Mode : Name_Id := No_Name) return List_Id;
+      In_Mode : Name_Id := No_Name) return Node_Id;
    --  Cf. the documentation of
    --  Ocarina.Analyzer.Queries.Get_List_Property
 

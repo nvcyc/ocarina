@@ -41,6 +41,7 @@ with Ocarina.Builder.AADL.Properties;
 with Ocarina.ME_AADL.AADL_Tree.Nodes;
 with Ocarina.ME_AADL.AADL_Tree.Nutils;
 with Ocarina.ME_AADL.AADL_Tree.Entities;
+with Ocarina.Output; use Ocarina.Output;
 
 package body Ocarina.Processor.Properties is
 
@@ -104,6 +105,7 @@ package body Ocarina.Processor.Properties is
       Success : Boolean;
 
    begin
+      Write_Line ("Compute_Property_Values: start");
       Success := Resolve_All_Properties (Root);
       Success := Resolve_All_Property_Names (Root) and then Success;
       return Success;
@@ -232,32 +234,38 @@ package body Ocarina.Processor.Properties is
 
          if Expanded_Value = No_Node then
             Set_Expanded_Single_Value (Prop_Value, No_Node);
-            Set_Expanded_Multi_Value (Prop_Value, No_List);
+            Set_Expanded_Multi_Value (Prop_Value, No_Node);
 
          elsif Kind (Expanded_Value) = K_Invalid_Node then
             --  FIXME : need for an error message
             Success := False;
             Set_Expanded_Single_Value (Prop_Value, No_Node);
-            Set_Expanded_Multi_Value (Prop_Value, No_List);
+            Set_Expanded_Multi_Value (Prop_Value, No_Node);
 
-         elsif Kind (Expanded_Value) = K_List_Id then
+         elsif Kind (Expanded_Value) = K_Property_List_Value then
             Set_Expanded_Single_Value (Prop_Value, No_Node);
-            Set_Expanded_Multi_Value (Prop_Value, List_Id (Expanded_Value));
+            Set_Expanded_Multi_Value (Prop_Value, Expanded_Value);
 
          elsif Next_Node (Expanded_Value) = No_Node
            and then Single_Value (Prop_Value) /= No_Node
          then
             Set_Expanded_Single_Value (Prop_Value, Expanded_Value);
-            Set_Expanded_Multi_Value (Prop_Value, No_List);
+            Set_Expanded_Multi_Value (Prop_Value, No_Node);
 
          else
             Set_Expanded_Single_Value (Prop_Value, No_Node);
             Set_Expanded_Multi_Value
               (Prop_Value,
+               New_Node (K_Property_List_Value, Loc (Expanded_Value)));
+            Set_Property_Values
+              (Expanded_Multi_Value (Prop_Value),
                New_List (K_List_Id, Loc (Expanded_Value)));
+            -- Set_Expanded_Multi_Value
+            --   (Prop_Value,
+            --    New_List (K_List_Id, Loc (Expanded_Value)));
             Append_Node_To_List
               (Expanded_Value,
-               Expanded_Multi_Value (Prop_Value));
+               Property_Values (Expanded_Multi_Value (Prop_Value)));
          end if;
       end if;
 
@@ -380,7 +388,10 @@ package body Ocarina.Processor.Properties is
       Success        : Boolean          := True;
 
    begin
+      Write_Line ("Resolve_Value: start");
       Expanded_Value := Expand_Property_Value (Property, Property);
+
+      Write_Line ("Resolve_Value: after Expanded_Value");
 
       if Expanded_Value = No_Node then
          Set_Expanded_Single_Value (Prop_Value, No_Node);
@@ -447,6 +458,8 @@ package body Ocarina.Processor.Properties is
          return No_Node;
       end if;
 
+      Write_Line ("Expand_Property_Value: start");
+
       --  First get the value of the property
       case Kind (Property) is
          when K_Property_Association =>
@@ -486,7 +499,9 @@ package body Ocarina.Processor.Properties is
 
          return Computed_Value;
       else
+         Write_Line ("Expand_Property_Value: before");
          List_Node     := First_Node (Multi_Value (Value));
+         Write_Line ("Expand_Property_Value: after");
          Expanded_List :=
            New_List (K_List_Id, Loc (Node_Id (Multi_Value (Value))));
          Undefined_Values := (List_Node /= No_Node);
@@ -1216,6 +1231,8 @@ package body Ocarina.Processor.Properties is
    begin
 
       --  Type refinements
+
+      Write_Line ("Resolve_Properties_Of_Component_Implementation: start");
 
       if Refines_Type (Component) /= No_List then
          List_Node := First_Node (Refines_Type (Component));

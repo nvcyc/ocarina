@@ -49,6 +49,7 @@ with Ocarina.Builder.AADL.Properties;
 with Ocarina.ME_AADL.AADL_Tree.Entities;
 with Ocarina.ME_AADL.AADL_Tree.Entities.Properties; use Ocarina.ME_AADL;
 use Ocarina.ME_AADL.AADL_Tree.Entities.Properties;
+with Ocarina.Output; use Ocarina.Output;
 
 package body Ocarina.FE_AADL.Parser.Properties is
 
@@ -80,6 +81,7 @@ package body Ocarina.FE_AADL.Parser.Properties is
 
       Loc                      : Location;
       Prop_Value               : Node_Id;
+      Items                    : List_Id;
 
    begin
       --  Parse Property_Value
@@ -103,21 +105,37 @@ package body Ocarina.FE_AADL.Parser.Properties is
             --  Prop_Value :=
             --  Node_Id (P_Items_List (P_Property_Value'Access,
 
-            Prop_Value :=
-              Node_Id
-                (P_Items_List
+            Write_Line ("Prop_Value: before");
+            Items := P_Items_List
                    (P_Property_Expression'Access,
                     No_Node,
                     T_Comma,
                     T_Right_Parenthesis,
-                    PC_Property_List_Value));
+                    PC_Property_List_Value);
+
+            -- Prop_Value := Node_Id (Items);
+            Prop_Value := New_Node (K_Property_List_Value, Loc);
+            -- Set_Kind (Prop_Value, K_Property_List_Value);
+
+            -- Prop_Value :=
+            --   Node_Id
+            --     (P_Items_List
+            --        (P_Property_Expression'Access,
+            --         No_Node,
+            --         T_Comma,
+            --         T_Right_Parenthesis,
+            --         PC_Property_List_Value));
+
+            Set_Property_Values(Prop_Value, Items);
+
+            Write_Line ("Prop_Value: after");
             if No (Prop_Value) then
                --  error when parsing Property_Expression list, quit
                Skip_Tokens (T_Semicolon);
                return No_Node;
             end if;
 
-            Set_Kind (Prop_Value, K_Property_List_Value);
+            
          end if;
 
       else
@@ -130,6 +148,8 @@ package body Ocarina.FE_AADL.Parser.Properties is
             return No_Node;
          end if;
       end if;
+
+      Write_Line ("Prop_Value: returning");
 
       return Prop_Value;
    end P_Property_Value;
@@ -161,6 +181,7 @@ package body Ocarina.FE_AADL.Parser.Properties is
      (Container : Node_Id) return Node_Id
    is
    begin
+      Write_Line ("P_Property_Association_In_Component_Implementation: returning");
       return P_Property_Association
           (Container     => Container,
            Property_Type => PAT_Simple_Or_Contained);
@@ -573,6 +594,9 @@ package body Ocarina.FE_AADL.Parser.Properties is
       --  the parser will parse again the property associations,
       --  giving the container. So, we just check the syntax this
       --  time.
+
+
+      Write_Line ("P_Property_Association: returning");
 
       return Property;
    end P_Property_Association;

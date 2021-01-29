@@ -225,10 +225,10 @@ package Ocarina.Analyzer.AADL.Queries is
    function Get_List_Property
      (Entity  : Node_Id;
       Name    : Name_Id;
-      In_Mode : Name_Id := No_Name) return List_Id;
+      In_Mode : Name_Id := No_Name) return Node_Id;
    --  Return the value of the 'list of XXX' property association
    --  named 'Name' if it is defined for 'Entity'. The returned list
-   --  is a Node_Container list. Otherwise, return No_List. If
+   --  is a Node_Container list. Otherwise, return No_Node. If
    --  'In_Mode' is a valid name, consider only the property defined
    --  for the given mode.
 

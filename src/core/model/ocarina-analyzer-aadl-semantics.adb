@@ -46,6 +46,7 @@ with Ocarina.ME_AADL.AADL_Tree.Entities;
 with Ocarina.ME_AADL.AADL_Tree.Entities.Properties;
 
 with Ocarina.Processor.Properties;
+with Ocarina.Output; use Ocarina.Output;
 
 package body Ocarina.Analyzer.AADL.Semantics is
 
@@ -1883,7 +1884,11 @@ package body Ocarina.Analyzer.AADL.Semantics is
       List_Node         : Node_Id;
       Package_List_Node : Node_Id;
    begin
+
+      Write_Line ("Check_Semantics_Of_Properties: start");
       Success := Compute_Property_Values (Root);
+
+      Write_Line ("Check_Semantics_Of_Properties: check 1");
 
       if Success and then Declarations (Root) /= No_List then
          List_Node := First_Node (Declarations (Root));
@@ -1971,6 +1976,8 @@ package body Ocarina.Analyzer.AADL.Semantics is
          end loop;
       end if;
 
+      Write_Line ("Check_Semantics_Of_Properties: returning");
+
       return Success;
    end Check_Semantics_Of_Properties;
 
@@ -1994,6 +2001,7 @@ package body Ocarina.Analyzer.AADL.Semantics is
       Success              : Boolean := True;
       Types_Are_Compatible : Boolean := True;
    begin
+      Write_Line ("Check_Values_Of_Property_Association: start");
       if Value_Of_Property_Association_Is_Undefined (Property_Association) then
          Success := True;
       else
@@ -2043,15 +2051,18 @@ package body Ocarina.Analyzer.AADL.Semantics is
          --  To avoid endless recursion, we begin by testing list
          --  properties.
 
+         Write_Line ("Check_Values_Of_Property_Association: check 1");
+
          if Expanded_Multi_Value
              (Property_Association_Value (Property_Association)) /=
-           No_List
+           No_Node
          then
             if Type_Of_Property_Is_A_List (Property_Name) then
                List_Node :=
                  First_Node
-                   (Expanded_Multi_Value
-                      (Property_Association_Value (Property_Association)));
+                   (Property_Values
+                      (Expanded_Multi_Value
+                         (Property_Association_Value (Property_Association))));
 
                while Present (List_Node) loop
                   Types_Are_Compatible :=
@@ -2199,31 +2210,62 @@ package body Ocarina.Analyzer.AADL.Semantics is
    function Convert_Single_Value_To_List
      (Property_Association : Node_Id) return Boolean
    is
+      List_Node : Node_Id;
       pragma Assert (Kind (Property_Association) = K_Property_Association);
    begin
-      Set_Expanded_Multi_Value
-        (Property_Association_Value (Property_Association),
+      List_Node :=
+        New_Node
+          (K_Property_List_Value,
+           Loc
+             (Expanded_Single_Value
+                (Property_Association_Value (Property_Association))));
+      Set_Property_Values
+        (List_Node, 
          New_List
            (K_List_Id,
             Loc
               (Expanded_Single_Value
                  (Property_Association_Value (Property_Association)))));
+      Set_Expanded_Multi_Value
+        (Property_Association_Value (Property_Association),
+         List_Node);
+
+      -- Set_Expanded_Multi_Value
+      --   (Property_Association_Value (Property_Association),
+      --    New_List
+      --      (K_List_Id,
+      --       Loc
+      --         (Expanded_Single_Value
+      --            (Property_Association_Value (Property_Association)))));
       Append_Node_To_List
         (Expanded_Single_Value
            (Property_Association_Value (Property_Association)),
-         Expanded_Multi_Value
-           (Property_Association_Value (Property_Association)));
+         Property_Values (Expanded_Multi_Value
+           (Property_Association_Value (Property_Association))));
+
 
       Set_Multi_Value
         (Property_Association_Value (Property_Association),
+         New_Node
+           (K_Property_List_Value,
+            Loc (Expanded_Single_Value (Property_Association_Value (Property_Association)))));
+      Set_Property_Values
+        (Multi_Value (Property_Association_Value (Property_Association)),
          New_List
            (K_List_Id,
             Loc
               (Single_Value
                  (Property_Association_Value (Property_Association)))));
+      -- Set_Multi_Value
+      --   (Property_Association_Value (Property_Association),
+      --    New_List
+      --      (K_List_Id,
+      --       Loc
+      --         (Single_Value
+      --            (Property_Association_Value (Property_Association)))));
       Append_Node_To_List
         (Single_Value (Property_Association_Value (Property_Association)),
-         Multi_Value (Property_Association_Value (Property_Association)));
+         Property_Values (Multi_Value (Property_Association_Value (Property_Association))));
 
       return True;
    end Convert_Single_Value_To_List;

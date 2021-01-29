@@ -50,7 +50,7 @@ package Ocarina.Builder.AADL.Properties is
       Constant_Type   : Node_Id;
       Unit_Identifier : Node_Id;
       Single_Value    : Node_Id;
-      Multiple_Values : List_Id;
+      Multiple_Values : Node_Id;
       Multiplicity    : Int) return Node_Id;
    --  Either Single_Value /= No_Node and Mulitple_Values = No_Node,
    --  then we have a single valued constant; or Single_Value =
@@ -69,7 +69,7 @@ package Ocarina.Builder.AADL.Properties is
       Is_Inherit              : Boolean;
       Is_Access               : Boolean;
       Single_Default_Value    : Node_Id;
-      Multiple_Default_Value  : List_Id;
+      Multiple_Default_Value  : Node_Id;
       Property_Name_Type      : Node_Id;
       Property_Type_Is_A_List : Boolean;
       Applies_To_All          : Boolean;

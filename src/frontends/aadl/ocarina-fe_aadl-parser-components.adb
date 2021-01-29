@@ -53,6 +53,8 @@ with Ocarina.FE_AADL.Parser.Properties;
 
 with Ocarina.Builder.AADL.Components;
 
+with Ocarina.Output; use Ocarina.Output;
+
 package body Ocarina.FE_AADL.Parser.Components is
 
    function P_Expected_Component_Implementation_Name
@@ -677,6 +679,7 @@ package body Ocarina.FE_AADL.Parser.Components is
       --  Properties
       --
 
+      Write_Line ("P_Component_Implementation: check 1");  
       if Token = T_Properties then
          Nb_Items :=
            P_Items_List
@@ -691,6 +694,7 @@ package body Ocarina.FE_AADL.Parser.Components is
       else
          Restore_Lexer (Loc);
       end if;
+      Write_Line ("P_Component_Implementation: check 2");  
 
       --
       --  Annexes
@@ -743,6 +747,9 @@ package body Ocarina.FE_AADL.Parser.Components is
       end if;
 
       Set_Parent (Impl, Parent);
+
+      Write_Line ("P_Component_Implementation: returning");  
+
       return Impl;
    end P_Component_Implementation;
 

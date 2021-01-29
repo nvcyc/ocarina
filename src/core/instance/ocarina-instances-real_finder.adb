@@ -128,8 +128,8 @@ package body Ocarina.Instances.REAL_Finder is
             N := ATN.Expanded_Single_Value (N);
          elsif ATN.Single_Value (N) /= No_Node then
             N := ATN.Single_Value (N);
-         elsif ATN.Multi_Value (N) /= No_List then
-            N       := ATN.First_Node (ATN.Multi_Value (N));
+         elsif ATN.Multi_Value (N) /= No_Node then
+            N := ATN.First_Node (ATN.Property_Values (ATN.Multi_Value (N)));
             Is_List := True;
          else
             N := No_Node;
@@ -265,11 +265,12 @@ package body Ocarina.Instances.REAL_Finder is
                       (Get_Reference_Property (Resolved_Var, Property_Name));
                else
                   declare
-                     A_List : constant List_Id :=
+                     A_List_Node : constant Node_Id :=
                        Get_List_Property (Resolved_Var, Property_Name);
                      A_Node : Node_Id;
                   begin
-                     A_Node := ATN.First_Node (A_List);
+                     A_Node :=
+                       ATN.First_Node (ATN.Property_Values (A_List_Node));
                      while Present (A_Node) loop
                         Result :=
                           RV.New_Elem_Value

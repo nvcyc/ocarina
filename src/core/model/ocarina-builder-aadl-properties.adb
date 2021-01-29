@@ -185,7 +185,7 @@ package body Ocarina.Builder.AADL.Properties is
       Constant_Type   : Node_Id;
       Unit_Identifier : Node_Id;
       Single_Value    : Node_Id;
-      Multiple_Values : List_Id;
+      Multiple_Values : Node_Id;
       Multiplicity    : Int) return Node_Id
    is
       use Ocarina.ME_AADL.AADL_Tree.Nutils;
@@ -198,7 +198,7 @@ package body Ocarina.Builder.AADL.Properties is
         (No (Unit_Identifier)
          or else Kind (Unit_Identifier) = K_Unique_Property_Type_Identifier);
 
-      pragma Assert (No (Single_Value) or else Is_Empty (Multiple_Values));
+      pragma Assert (No (Single_Value) or else No (Multiple_Values));
 
       pragma Assert
         (Kind (Constant_Type) = K_Integer_Type
@@ -277,7 +277,7 @@ package body Ocarina.Builder.AADL.Properties is
       Is_Inherit              : Boolean;
       Is_Access               : Boolean;
       Single_Default_Value    : Node_Id;
-      Multiple_Default_Value  : List_Id;
+      Multiple_Default_Value  : Node_Id;
       Property_Name_Type      : Node_Id;
       Property_Type_Is_A_List : Boolean;
       Applies_To_All          : Boolean;
@@ -313,7 +313,7 @@ package body Ocarina.Builder.AADL.Properties is
         (Ocarina.ME_AADL.AADL_Tree.Nodes.Property_Name_Type (Node),
          Property_Type_Is_A_List);
 
-      if Multiple_Default_Value = No_List
+      if Multiple_Default_Value = No_Node
         and then Single_Default_Value = No_Node
       then
          Set_Default_Value (Node, No_Node);
@@ -416,16 +416,14 @@ package body Ocarina.Builder.AADL.Properties is
          if Property_Value /= No_Node then
             if Kind (Property_Value) = K_Property_List_Value then
                Set_Single_Value (Value_Of_Association, No_Node);
-               Set_Multi_Value
-                 (Value_Of_Association,
-                  List_Id (Property_Value));
+               Set_Multi_Value (Value_Of_Association, Property_Value);
             else
                Set_Single_Value (Value_Of_Association, Property_Value);
-               Set_Multi_Value (Value_Of_Association, No_List);
+               Set_Multi_Value (Value_Of_Association, No_Node);
             end if;
          else
             Set_Single_Value (Value_Of_Association, No_Node);
-            Set_Multi_Value (Value_Of_Association, No_List);
+            Set_Multi_Value (Value_Of_Association, No_Node);
          end if;
 
          case Kind (Container) is

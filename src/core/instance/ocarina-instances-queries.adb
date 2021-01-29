@@ -157,15 +157,18 @@ package body Ocarina.Instances.Queries is
       if Expanded_Single_Value (Property_Value) /= No_Node then
          Property_Expression := Expanded_Single_Value (Property_Value);
 
-      elsif Expanded_Multi_Value (Property_Value) /= No_List then
+      elsif Expanded_Multi_Value (Property_Value) /= No_Node then
          Property_Expression :=
-           ATN.First_Node (Expanded_Multi_Value (Property_Value));
+           ATN.First_Node
+             (Property_Values (Expanded_Multi_Value (Property_Value)));
 
       elsif Single_Value (Property_Value) /= No_Node then
          Property_Expression := Single_Value (Property_Value);
 
-      elsif Multi_Value (Property_Value) /= No_List then
-         Property_Expression := ATN.First_Node (Multi_Value (Property_Value));
+      elsif Multi_Value (Property_Value) /= No_Node then
+         Property_Expression :=
+           ATN.First_Node
+             (Property_Values (Multi_Value (Property_Value)));
 
       else
          Property_Expression := No_Node;
@@ -430,7 +433,7 @@ package body Ocarina.Instances.Queries is
    function Get_List_Property
      (Entity  : Node_Id;
       Name    : Name_Id;
-      In_Mode : Name_Id := No_Name) return List_Id
+      In_Mode : Name_Id := No_Name) return Node_Id
    is
       Property : constant Node_Id :=
         Get_Property_Association (Entity, Name, In_Mode);
@@ -439,7 +442,7 @@ package body Ocarina.Instances.Queries is
         or else not Type_Of_Property_Is_A_List
           (ATE.Get_Referenced_Entity (AIN.Property_Name (Property)))
       then
-         return No_List;
+         return No_Node;
       end if;
 
       if No (Expanded_Multi_Value (AIN.Property_Association_Value (Property)))
@@ -448,8 +451,9 @@ package body Ocarina.Instances.Queries is
            (Expanded_Multi_Value (AIN.Property_Association_Value (Property)))
            and then No
            (ATN.First_Node
-              (Expanded_Multi_Value
-                 (AIN.Property_Association_Value (Property)))))
+              (Property_Values
+                 (Expanded_Multi_Value
+                    (AIN.Property_Association_Value (Property))))))
       then
          return Multi_Value (AIN.Property_Association_Value (Property));
       end if;
@@ -460,7 +464,7 @@ package body Ocarina.Instances.Queries is
    function Get_List_Property
      (Entity  : Node_Id;
       Name    : String;
-      In_Mode : Name_Id := No_Name) return List_Id
+      In_Mode : Name_Id := No_Name) return Node_Id
    is
    begin
       return Get_List_Property (Entity, Get_String_Name (Name), In_Mode);

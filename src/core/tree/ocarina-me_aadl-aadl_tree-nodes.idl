@@ -4,7 +4,8 @@
 **                                                                          **
 **                        O C A R I N A . N O D E S                         **
 **                                                                          **
-**    Copyright (C) 2004-2009, GET-Telecom Paris, 2010-2016 ESA & ISAE.     **
+**    Copyright (C) 2004-2009, GET-Telecom Paris, 2010-2016 ESA & ISAE,     **
+**                              2021 OpenAADL                               **
 **                                                                          **
 ** Ocarina  is free software;  you  can  redistribute  it and/or  modify    **
 ** it under terms of the GNU General Public License as published by the     **
@@ -1210,9 +1211,9 @@ module Ocarina::ME_AADL::AADL_Tree::Nodes {
     Node_Id  Value_Container; // the parent node, in which the value
                               // is declared
     Node_Id  Single_Value;
-    List_Id  Multi_Value;
+    Node_Id  Multi_Value;
     Node_Id  Expanded_Single_Value; // without property terms
-    List_Id  Expanded_Multi_Value;
+    Node_Id  Expanded_Multi_Value;
   };
   // If Single_Value is No_Node, then the property value is a list,
   // which may be empty
@@ -1253,12 +1254,12 @@ module Ocarina::ME_AADL::AADL_Tree::Nodes {
   //                                   | memory_classifier_reference
   //                                   | bus_classsifer_reference
 
-  interface Property_List_Value : List_Id { };
-  //  interface Property_List_Value : Node_Id {
-  //  List_Id Property_Values;
-  //};
-
+  //interface Property_List_Value : List_Id { };
   //  XXX Change to inherit from Node_Id, list being an internal field
+    interface Property_List_Value : Node_Id {
+    List_Id Property_Values;
+  };
+
   /*
   in_binding ::= in binding ( platform_classifier_reference
                 { , platform_classifier_reference }* )

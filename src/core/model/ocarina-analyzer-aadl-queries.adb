@@ -63,13 +63,15 @@ package body Ocarina.Analyzer.AADL.Queries is
    begin
       if Expanded_Single_Value (Property_Value) /= No_Node then
          Property_Expression := Expanded_Single_Value (Property_Value);
-      elsif Expanded_Multi_Value (Property_Value) /= No_List then
+      elsif Expanded_Multi_Value (Property_Value) /= No_Node then
          Property_Expression :=
-           First_Node (Expanded_Multi_Value (Property_Value));
+           First_Node
+             (Property_Values (Expanded_Multi_Value (Property_Value)));
       elsif Single_Value (Property_Value) /= No_Node then
          Property_Expression := Single_Value (Property_Value);
-      elsif Multi_Value (Property_Value) /= No_List then
-         Property_Expression := First_Node (Multi_Value (Property_Value));
+      elsif Multi_Value (Property_Value) /= No_Node then
+         Property_Expression :=
+           First_Node (Property_Values (Multi_Value (Property_Value)));
       else
          Property_Expression := No_Node;
       end if;
@@ -410,7 +412,7 @@ package body Ocarina.Analyzer.AADL.Queries is
    function Get_List_Property
      (Entity  : Node_Id;
       Name    : Name_Id;
-      In_Mode : Name_Id := No_Name) return List_Id
+      In_Mode : Name_Id := No_Name) return Node_Id
    is
       Property : constant Node_Id :=
         Find_Property_Association_From_Name
@@ -422,7 +424,7 @@ package body Ocarina.Analyzer.AADL.Queries is
         or else not Type_Of_Property_Is_A_List
           (Get_Referenced_Entity (Property_Name (Property)))
       then
-         return No_List;
+         return No_Node;
       end if;
 
       return Expanded_Multi_Value (Property_Association_Value (Property));
